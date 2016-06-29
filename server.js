@@ -1,43 +1,19 @@
 const express = require("express");
-const mysql = require("mysql");
 const jsonParser = require('body-parser').json();
 var PORT = 3000;
 
-const usersRouter = require(__dirname + '/routes/notes');
-
-var connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: ''
-});
+const usersRouter = require(__dirname + '/routes/user_routes');
 
 const app = module.exports = exports = express();
 
-connection.query('CREATE DATABASE IF NOT EXISTS test1', function(err) {
-  if(err) throw err;
-  connection.query('USE test1', function(err) {
-    if(err) throw err;
-    connection.query('CREATE TABLE IF NOT EXISTS users('
-    + 'id INT NOT NULL AUTO_INCREMENT,'
-    + 'PRIMARY KEY(id),'
-    + 'name VARCHAR(30)'
-    + ')', function(err) {
-      if(err) throw err;
-    });
-  });
-});
+app.use('/', usersRouter);
 
-app.get('/', function(req, res) {
-  res.sendfile(__dirname + '/index.html');
-});
-
-app.post('/users', jsonParser, function(req, res) {
-  connection.query('INSERT INTO users SET ?', req.body, function(err, result) {
-    if(err) throw err;
-    res.send('User added to database with ID: ' + result.insertId);
-  });
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE');
+  next();
 });
 
 app.listen(PORT);
-console.log("Express server listening on port:" + PORT);
+console.log("Server listening on port:" + PORT);
